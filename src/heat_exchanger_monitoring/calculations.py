@@ -29,3 +29,27 @@ def calculate_energy_balance_deviation(
     average_duty_kw = (hot_duty_kw + cold_duty_kw) / 2.0
     absolute_difference_kw = np.abs(hot_duty_kw - cold_duty_kw)
     return absolute_difference_kw / average_duty_kw * 100.0
+
+def calculate_counter_current_lmtd(
+    hot_inlet_temp_c: np.ndarray,
+    hot_outlet_temp_c: np.ndarray,
+    cold_inlet_temp_c: np.ndarray,
+    cold_outlet_temp_c: np.ndarray,
+) -> np.ndarray:
+    """Calculate counter-current LMTD in degrees Celsius."""
+    delta_t_1 = hot_inlet_temp_c - cold_outlet_temp_c
+    delta_t_2 = hot_outlet_temp_c - cold_inlet_temp_c
+
+    if np.any(delta_t_1 <= 0) or np.any(delta_t_2 <= 0):
+        raise ValueError("Terminal temperature differences must be positive.")
+
+    lmtd = np.empty_like(delta_t_1, dtype=float)
+    equal_mask = np.isclose(delta_t_1, delta_t_2)
+
+    lmtd[equal_mask] = delta_t_1[equal_mask]
+    lmtd[~equal_mask] = (
+        (delta_t_1[~equal_mask] - delta_t_2[~equal_mask])
+        / np.log(delta_t_1[~equal_mask] / delta_t_2[~equal_mask])
+    )
+
+    return lmtd
