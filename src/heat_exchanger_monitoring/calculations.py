@@ -53,3 +53,30 @@ def calculate_counter_current_lmtd(
     )
 
     return lmtd
+
+def calculate_ua(
+    duty_kw: np.ndarray,
+    lmtd_c: np.ndarray,
+) -> np.ndarray:
+    """Calculate UA in kW/K from heat duty and LMTD."""
+    if np.any(duty_kw < 0):
+        raise ValueError("Heat duty must be non-negative.")
+
+    if np.any(lmtd_c <= 0):
+        raise ValueError("LMTD must be positive.")
+
+    return duty_kw / lmtd_c
+
+
+def calculate_u(
+    ua_kw_per_k: np.ndarray,
+    area_m2: np.ndarray,
+) -> np.ndarray:
+    """Calculate overall heat-transfer coefficient in W/(m²·K)."""
+    if np.any(ua_kw_per_k < 0):
+        raise ValueError("UA must be non-negative.")
+
+    if np.any(area_m2 <= 0):
+        raise ValueError("Area must be positive.")
+
+    return ua_kw_per_k * 1000.0 / area_m2

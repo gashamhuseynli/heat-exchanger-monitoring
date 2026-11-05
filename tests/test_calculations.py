@@ -6,6 +6,8 @@ from heat_exchanger_monitoring.calculations import (
     calculate_counter_current_lmtd,
     calculate_energy_balance_deviation,
     calculate_hot_duty,
+    calculate_ua,
+    calculate_u,
 )
 
 def test_calculate_hot_duty_for_multiple_cases():
@@ -86,4 +88,29 @@ def test_lmtd_rejects_nonpositive_temperature_difference():
             np.array([70.0]),
             np.array([75.0]),
             np.array([85.0]),
+        )
+        
+def test_calculate_ua_and_u():
+    duty_kw = np.array([400.0])
+    lmtd_c = np.array([50.0])
+    area_m2 = np.array([20.0])
+
+    actual_ua_kw_per_k = calculate_ua(duty_kw, lmtd_c)
+    actual_u_w_m2_k = calculate_u(actual_ua_kw_per_k, area_m2)
+
+    assert np.allclose(actual_ua_kw_per_k, np.array([8.0]))
+    assert np.allclose(actual_u_w_m2_k, np.array([400.0]))
+
+
+def test_ua_and_u_reject_invalid_inputs():
+    with pytest.raises(ValueError, match="LMTD must be positive"):
+        calculate_ua(
+            np.array([400.0]),
+            np.array([0.0]),
+        )
+
+    with pytest.raises(ValueError, match="Area must be positive"):
+        calculate_u(
+            np.array([8.0]),
+            np.array([0.0]),
         )
