@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-
+from .visualization import create_monitoring_summary
 from .pipeline import run_monitoring_pipeline
 
 
@@ -45,6 +45,13 @@ def main() -> None:
         output_csv=args.output,
         reference_scenario=args.reference,
     )
+    
+    plot_path = args.output.with_name("monitoring_summary.png")
+
+    create_monitoring_summary(
+        results,
+        plot_path,
+    )
 
     display_columns = [
         "timestamp",
@@ -59,6 +66,7 @@ def main() -> None:
     print("\nHeat-exchanger monitoring results:\n")
     print(results[display_columns].to_string(index=False))
     print(f"\nFull results saved to: {args.output}")
+    print(f"Summary figure saved to: {plot_path}")
 
 
 if __name__ == "__main__":
